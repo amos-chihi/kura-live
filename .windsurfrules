@@ -1,0 +1,79 @@
+# KURA LIVE - Kenya Election 2027 MVP Development Rules
+
+## Technology Stack
+- Stack: Next.js 14 App Router, TypeScript strict mode, Tailwind CSS
+- Database: Supabase (PostgreSQL) with client library
+- Auth: Supabase Auth with middleware protection
+- State: Zustand
+- Forms: React Hook Form + Zod validation
+- Icons: Lucide React
+- Charts: Recharts
+- Animations: Framer Motion
+- Video: react-player
+- Deployment: Vercel
+
+## Code Standards
+- Never use 'any' TypeScript type
+- All components are named exports, never default exports for components
+- All API routes follow RESTful conventions and return { data, error } shape
+- Database: all queries go through /lib/supabase.ts client
+- All user-facing errors are caught and displayed in toast notifications
+- Auth: use middleware.ts to protect /dashboard and /admin routes
+- Never use inline styles — always Tailwind classes
+- Mobile-first responsive design on all components
+- All async operations show loading states
+
+## Project Structure
+src/
+app/
+├── page.tsx -- Landing/login redirect
+├── login/page.tsx -- Agent login page
+├── dashboard/
+│   ├── page.tsx -- Main dashboard (tabs: Stream | Transcription | Results | Comparison | Alerts)
+│   └── layout.tsx -- Protected layout with nav
+├── admin/
+│   ├── page.tsx -- Campaign admin panel
+│   └── layout.tsx -- Admin-protected layout
+├── results/page.tsx -- Public results dashboard (no auth)
+└── api/
+    ├── streams/route.ts -- GET/POST live streams
+    ├── tallies/route.ts -- GET/POST tally entries
+    ├── tallies/[station]/route.ts -- GET tallies by station
+    ├── forms/route.ts -- POST form upload metadata
+    ├── alerts/route.ts -- GET/POST/PATCH alerts
+    ├── iebc/[station]/route.ts -- GET mock IEBC portal data
+    └── simulate/transcript/route.ts -- POST simulate transcription
+
+components/
+├── ui/ -- Core UI components (Badge, StatCard, AlertCard, etc.)
+├── dashboard/ -- Dashboard panels
+└── public/ -- Public-facing components
+
+lib/
+├── supabase.ts -- Supabase client (server + client versions)
+├── supabase-server.ts -- Server-side Supabase client
+├── types.ts -- TypeScript interfaces
+├── constants.ts -- App constants
+└── demo-data.ts -- Mock/demo data
+
+hooks/ -- Custom React hooks
+store/ -- Zustand stores
+
+## Color System (Tailwind)
+- kura-navy: #0A1628
+- kura-navy-mid: #1A3A5C
+- kura-accent: #00AACC
+- kura-accent2: #FF3D71
+- kura-green: #1A7A4A
+- kura-amber: #D4860A
+- kura-surface: #0D2137
+- kura-border: #1A2540
+
+## Key Features Implementation
+- StreamPanel: URL inputs, status dots, Go Live controls, timer
+- TranscriptionPanel: Live transcript, vote extraction, simulation
+- ResultsPanel: Form upload, OCR scanning, IEBC portal integration
+- ComparisonPanel: Three-source comparison, discrepancy detection
+- AlertsPanel: Real-time alerts, escalate/dismiss actions
+- Public dashboard: National results table, Kenya map
+- Admin panel: Campaign oversight and management
