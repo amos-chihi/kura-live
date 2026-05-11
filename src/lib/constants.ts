@@ -72,7 +72,7 @@ export const MAJOR_PARTIES = [
   'Chama Cha Kazi', 'Roots Party', 'Agano Party', 'CCM'
 ]
 
-export const VOTE_EXTRACTION_REGEX = /([A-Za-z\s]+)\s+(?:received|got)\s+([\d,]+)\s+votes/i
+export const VOTE_EXTRACTION_REGEX = /([A-Za-z][A-Za-z\s'.-]+?)\s+(?:has\s+)?(?:received|got)\s+([\d,]+)\s+votes/i
 
 export const SUPPORTED_VIDEO_PLATFORMS = {
   TIKTOK: 'tiktok.com',

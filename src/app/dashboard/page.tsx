@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import ElectionSidebar from '@/components/command/ElectionSidebar'
 import TopStatusBar from '@/components/command/TopStatusBar'
 import LiveMapPanel from '@/components/command/LiveMapPanel'
@@ -16,9 +15,10 @@ import OpsRightRail from '@/components/command/OpsRightRail'
 import { useWebSocketStore } from '@/store/websocketStore'
 
 export default function Kura27CommandCenter() {
+  const [activeSection, setActiveSection] = useState('dashboard')
   const [commandMode, setCommandMode] = useState<'election' | 'security' | 'tally' | 'broadcast' | 'crisis'>('election')
   const [rightRailOpen, setRightRailOpen] = useState(true)
-  const { connect, disconnect, updateData } = useWebSocketStore()
+  const { connect, disconnect, updateData, streams, incidents } = useWebSocketStore()
 
   useEffect(() => {
     connect()
@@ -59,40 +59,56 @@ export default function Kura27CommandCenter() {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [])
 
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId)
+
+    if (sectionId === 'dashboard') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="min-h-screen bg-kura-bg text-kura-text overflow-hidden">
       {/* Left Sidebar */}
-      <ElectionSidebar />
+      <ElectionSidebar
+        activeSection={activeSection}
+        onSelectSection={scrollToSection}
+        liveStreamCount={streams.filter((stream) => stream.status === 'live').length}
+        incidentCount={incidents.filter((incident) => incident.status !== 'resolved').length}
+      />
       
       {/* Top Status Bar */}
       <TopStatusBar />
       
       {/* Main Command Center Grid */}
-      <div className="flex h-screen pt-14">
+      <div className="flex h-screen pt-14 pl-[300px]">
         <div className={`flex-1 intelligence-grid transition-all duration-300 ${rightRailOpen ? 'mr-80' : ''}`}>
           
           {/* ROW 1 */}
-          <div className="grid grid-cols-12 gap-4">
+          <div id="dashboard" className="grid grid-cols-12 gap-4">
             {/* Live Map Panel - 8 cols */}
             <div className="col-span-8">
               <LiveMapPanel />
             </div>
             
             {/* Results Tally Panel - 4 cols */}
-            <div className="col-span-4">
+            <div id="tally" className="col-span-4">
               <ResultsTallyPanel />
             </div>
           </div>
 
           {/* ROW 2 */}
-          <div className="grid grid-cols-12 gap-4">
+          <div id="streams" className="grid grid-cols-12 gap-4">
             {/* Stream Monitor - 6 cols */}
             <div className="col-span-6">
               <StreamWall />
             </div>
             
             {/* Predictive Analytics - 6 cols */}
-            <div className="col-span-6">
+            <div id="analytics" className="col-span-6">
               <PredictiveAnalytics />
             </div>
           </div>
@@ -100,23 +116,23 @@ export default function Kura27CommandCenter() {
           {/* ROW 3 */}
           <div className="grid grid-cols-12 gap-4">
             {/* Incident Operations - 4 cols */}
-            <div className="col-span-4">
+            <div id="incidents" className="col-span-4">
               <IncidentOpsPanel />
             </div>
             
             {/* Agent Operations - 4 cols */}
-            <div className="col-span-4">
+            <div id="agents" className="col-span-4">
               <AgentOpsPanel />
             </div>
             
             {/* Communications Hub - 4 cols */}
-            <div className="col-span-4">
+            <div id="communications" className="col-span-4">
               <CommunicationsHub />
             </div>
           </div>
 
           {/* ROW 4 */}
-          <div className="grid grid-cols-12 gap-4">
+          <div id="ai" className="grid grid-cols-12 gap-4">
             {/* AI Monitor - Full width */}
             <div className="col-span-12">
               <AIMonitorPanel />
@@ -145,15 +161,20 @@ export default function Kura27CommandCenter() {
       {/* Command Mode Overlays */}
       {commandMode === 'broadcast' && (
         <div className="fixed inset-0 bg-kura-bg/95 backdrop-blur-xs z-50 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-4xl font-bold text-kura-green mb-4">BROADCAST MODE</h2>
-            <p className="text-kura-muted">Full screen map view activated</p>
-            <button
-              onClick={() => setCommandMode('election')}
-              className="mt-8 ops-button-primary"
-            >
-              Exit Broadcast Mode (M)
-            </button>
+          <div className="h-full w-full p-8">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-4xl font-bold text-kura-green mb-2">BROADCAST MODE</h2>
+                <p className="text-kura-muted">Full screen national operations map</p>
+              </div>
+              <button
+                onClick={() => setCommandMode('election')}
+                className="ops-button-primary"
+              >
+                Exit Broadcast Mode (M)
+              </button>
+            </div>
+            <LiveMapPanel fullPage />
           </div>
         </div>
       )}

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { 
   Radio, 
   Wifi, 
@@ -14,23 +15,29 @@ import {
   Grid,
   List
 } from 'lucide-react'
+import type { CommandCentreStream as StreamData } from '@/lib/commandCenter'
 import { useWebSocketStore } from '@/store/websocketStore'
 
 export default function StreamWall() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedStream, setSelectedStream] = useState<string | null>(null)
+  const router = useRouter()
   const { streams, stations } = useWebSocketStore()
 
   // Get station info for each stream
-  const streamsWithStationInfo = streams.map(stream => {
-    const station = stations.find(s => s.station_code === stream.station_code)
-    return {
-      ...stream,
-      station_name: station?.station_name || 'Unknown Station',
-      county: station?.county || 'Unknown',
-      constituency: station?.constituency || 'Unknown'
-    }
-  })
+  const streamsWithStationInfo = useMemo(
+    () =>
+      streams.map((stream) => {
+        const station = stations.find((item) => item.station_code === stream.station_code)
+        return {
+          ...stream,
+          station_name: station?.station_name ?? 'Unknown Station',
+          county: station?.county ?? 'Unknown',
+          constituency: station?.constituency ?? 'Unknown',
+        }
+      }),
+    [stations, streams]
+  )
 
   const getSignalQualityColor = (quality: number) => {
     if (quality >= 80) return 'text-kura-green'
@@ -55,7 +62,19 @@ export default function StreamWall() {
     }
   }
 
-  const StreamCard = ({ stream, index }: { stream: any; index: number }) => (
+  const openStreamWorkspace = (stream: StreamData) => {
+    if (stream.url) {
+      window.open(stream.url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const StreamCard = ({
+    stream,
+    index,
+  }: {
+    stream: StreamData & { station_name: string; county: string; constituency: string }
+    index: number
+  }) => (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -155,14 +174,27 @@ export default function StreamWall() {
 
       {/* Action Bar */}
       <div className="p-3 border-t border-kura-border">
-        <button className="w-full ops-button-primary text-xs">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            openStreamWorkspace(stream)
+          }}
+          className="w-full ops-button-primary text-xs"
+        >
           Open Feed
         </button>
       </div>
     </motion.div>
   )
 
-  const StreamListItem = ({ stream, index }: { stream: any; index: number }) => (
+  const StreamListItem = ({
+    stream,
+    index,
+  }: {
+    stream: StreamData & { station_name: string; county: string; constituency: string }
+    index: number
+  }) => (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
@@ -222,7 +254,14 @@ export default function StreamWall() {
         </div>
 
         {/* Action */}
-        <button className="ops-button-primary text-xs px-3 py-1">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            openStreamWorkspace(stream)
+          }}
+          className="ops-button-primary text-xs px-3 py-1"
+        >
           Open
         </button>
       </div>
@@ -239,7 +278,7 @@ export default function StreamWall() {
             <span>Live Stream Monitor</span>
           </h2>
           <p className="text-xs text-kura-muted">
-            {streams.filter(s => s.status === 'live').length} of {streams.length} streams active
+            {streams.filter((stream) => stream.status === 'live').length} of {streams.length} streams active
           </p>
         </div>
         
@@ -268,13 +307,13 @@ export default function StreamWall() {
       <div className="flex-1 overflow-y-auto p-4">
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {streamsWithStationInfo.map((stream, index) => (
+              {streamsWithStationInfo.map((stream, index) => (
               <StreamCard key={stream.id} stream={stream} index={index} />
             ))}
           </div>
         ) : (
           <div className="space-y-3">
-            {streamsWithStationInfo.map((stream, index) => (
+              {streamsWithStationInfo.map((stream, index) => (
               <StreamListItem key={stream.id} stream={stream} index={index} />
             ))}
           </div>
@@ -286,25 +325,25 @@ export default function StreamWall() {
         <div className="grid grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-lg font-bold text-kura-green">
-              {streams.filter(s => s.status === 'live').length}
+              {streams.filter((stream) => stream.status === 'live').length}
             </div>
             <div className="text-xs text-kura-muted">Live</div>
           </div>
           <div>
             <div className="text-lg font-bold text-kura-blue">
-              {streams.reduce((sum, s) => sum + s.viewers, 0).toLocaleString()}
+              {streams.reduce((sum, stream) => sum + stream.viewers, 0).toLocaleString()}
             </div>
             <div className="text-xs text-kura-muted">Viewers</div>
           </div>
           <div>
             <div className="text-lg font-bold text-kura-amber">
-              {Math.round(streams.reduce((sum, s) => sum + s.signal_quality, 0) / streams.length)}%
+              {streams.length > 0 ? Math.round(streams.reduce((sum, stream) => sum + stream.signal_quality, 0) / streams.length) : 0}%
             </div>
             <div className="text-xs text-kura-muted">Avg Signal</div>
           </div>
           <div>
             <div className="text-lg font-bold text-kura-purple">
-              {Math.round(streams.reduce((sum, s) => sum + s.latency, 0) / streams.length)}ms
+              {streams.length > 0 ? Math.round(streams.reduce((sum, stream) => sum + stream.latency, 0) / streams.length) : 0}ms
             </div>
             <div className="text-xs text-kura-muted">Avg Latency</div>
           </div>

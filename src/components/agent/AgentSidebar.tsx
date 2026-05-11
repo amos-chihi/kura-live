@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ClipboardCheck, Eye, FileBarChart2, Map, Video } from 'lucide-react'
+import { ClipboardCheck, Eye, FileBarChart2, LayoutDashboard, Map, Video } from 'lucide-react'
 
 interface AgentSidebarProps {
   activeTab: string
@@ -16,6 +16,7 @@ interface AgentSidebarProps {
 export default function AgentSidebar({ activeTab, setActiveTab, tabs }: AgentSidebarProps) {
   const portalLinks = [
     { name: 'Assigned Station', href: '/agent', icon: ClipboardCheck },
+    { name: 'Command Centre', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Public Results', href: '/results', icon: FileBarChart2 },
     { name: 'National Map', href: '/map-view', icon: Map },
     { name: 'Stream Test', href: '/stream-test', icon: Video },
@@ -68,7 +69,7 @@ export default function AgentSidebar({ activeTab, setActiveTab, tabs }: AgentSid
           </div>
           <div className="mt-4 rounded-lg border border-kura-border bg-kura-navy p-3 text-xs text-gray-400">
             <p className="text-white mb-1">Restricted Rights</p>
-            <p>Agents cannot access command-center operations, agent approval, or administrative communications controls.</p>
+            <p>Agents can monitor the shared command centre, but administrative approvals and privileged communications controls remain restricted.</p>
           </div>
         </div>
       </div>

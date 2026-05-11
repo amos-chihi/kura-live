@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
-import { Map, MapPin, Filter, Layers, Activity, Wifi, WifiOff } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Map, ExternalLink, Layers, Wifi, WifiOff } from 'lucide-react'
+import type { CommandCentreStation as StationData } from '@/lib/commandCenter'
 import { useWebSocketStore } from '@/store/websocketStore'
 
 // Dynamically import Leaflet to avoid SSR issues
@@ -15,7 +16,11 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 type MapMode = 'standard' | 'heat' | 'incidents' | 'security'
 type StationFilter = 'all' | 'live' | 'reporting' | 'offline'
 
-export default function LiveMapPanel() {
+interface LiveMapPanelProps {
+  fullPage?: boolean
+}
+
+export default function LiveMapPanel({ fullPage = false }: LiveMapPanelProps) {
   const [mapMode, setMapMode] = useState<MapMode>('standard')
   const [stationFilter, setStationFilter] = useState<StationFilter>('all')
   const [selectedCounty, setSelectedCounty] = useState('all')
@@ -25,25 +30,33 @@ export default function LiveMapPanel() {
     streams: true,
     boundaries: true
   })
-  
-  const { stations, streams, incidents } = useWebSocketStore()
+  const router = useRouter()
+  const { connected, stations, incidents } = useWebSocketStore()
 
   // Filter stations based on selected filter
-  const filteredStations = stations.filter(station => {
-    switch (stationFilter) {
-      case 'live':
-        return station.has_stream
-      case 'reporting':
-        return station.status === 'reporting'
-      case 'offline':
-        return station.status === 'offline'
-      default:
-        return true
-    }
-  })
+  const filteredStations = useMemo(
+    () =>
+      stations.filter((station) => {
+        if (selectedCounty !== 'all' && station.county !== selectedCounty) {
+          return false
+        }
+
+        switch (stationFilter) {
+          case 'live':
+            return station.has_stream
+          case 'reporting':
+            return station.status === 'reporting'
+          case 'offline':
+            return station.status === 'offline'
+          default:
+            return true
+        }
+      }),
+    [selectedCounty, stationFilter, stations]
+  )
 
   // Get station color based on status and mode
-  const getStationColor = (station: any) => {
+  const getStationColor = (station: StationData) => {
     if (mapMode === 'incidents') {
       const hasIncident = incidents.some(inc => inc.location === station.county && inc.status === 'open')
       return hasIncident ? '#FF4D4F' : '#00D26A'
@@ -81,7 +94,7 @@ export default function LiveMapPanel() {
   }
 
   return (
-    <div className="command-panel h-full flex flex-col">
+    <div className={`command-panel ${fullPage ? 'min-h-[calc(100vh-3rem)]' : 'h-full'} flex flex-col`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-kura-border">
         <div>
@@ -89,7 +102,9 @@ export default function LiveMapPanel() {
             <Map className="w-5 h-5 text-kura-green" />
             <span>Station Map</span>
           </h2>
-          <p className="text-xs text-kura-muted">GPS monitored stations</p>
+          <p className="text-xs text-kura-muted">
+            {connected ? 'Live command-centre geospatial view' : 'Connecting to command snapshot'}
+          </p>
         </div>
         
         {/* Map Mode Selector */}
@@ -118,7 +133,7 @@ export default function LiveMapPanel() {
             className="bg-kura-panel2 border border-kura-border text-kura-text text-xs px-3 py-2 rounded-lg"
           >
             <option value="all">All Counties</option>
-            {counties.slice(1, 11).map(county => (
+          {counties.slice(1, 11).map((county) => (
               <option key={county} value={county}>{county}</option>
             ))}
           </select>
@@ -176,7 +191,7 @@ export default function LiveMapPanel() {
       </div>
 
       {/* Map Container */}
-      <div className="flex-1 relative">
+      <div className={`relative ${fullPage ? 'min-h-[70vh]' : 'flex-1'}`}>
         <MapContainer
           center={[0.0236, 37.9062]}
           zoom={6}
@@ -188,9 +203,7 @@ export default function LiveMapPanel() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
-          {filteredStations
-            .filter(station => selectedCounty === 'all' || station.county === selectedCounty)
-            .map((station) => (
+          {filteredStations.map((station) => (
               <CircleMarker
                 key={station.id}
                 center={[station.coordinates.lat, station.coordinates.lng]}
@@ -239,12 +252,38 @@ export default function LiveMapPanel() {
                           )}
                         </div>
                       </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-kura-muted">Verification:</span>
+                        <span
+                          className={`text-xs font-medium ${
+                            station.verification_status === 'verified'
+                              ? 'text-kura-green'
+                              : station.verification_status === 'discrepancy'
+                                ? 'text-kura-red'
+                                : 'text-kura-amber'
+                          }`}
+                        >
+                          {station.verification_status}
+                        </span>
+                      </div>
                       
                       {station.has_stream && (
-                        <button className="w-full ops-button-primary text-xs mt-2">
-                          Open Stream
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/agent?tab=stream`)}
+                          className="w-full ops-button-primary text-xs mt-2"
+                        >
+                          Open Stream Workspace
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/map-view?station=${encodeURIComponent(station.station_code)}`)}
+                        className="w-full ops-button-secondary text-xs mt-2 flex items-center justify-center gap-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Open Full Map View
+                      </button>
                     </div>
                   </div>
                 </Popup>
@@ -262,13 +301,19 @@ export default function LiveMapPanel() {
             <div className="flex items-center justify-between space-x-4">
               <span className="text-kura-muted">Live:</span>
               <span className="text-kura-green font-medium">
-                {filteredStations.filter(s => s.has_stream).length}
+                {filteredStations.filter((station) => station.has_stream).length}
               </span>
             </div>
             <div className="flex items-center justify-between space-x-4">
               <span className="text-kura-muted">Reporting:</span>
               <span className="text-kura-text font-medium">
-                {filteredStations.filter(s => s.status === 'reporting').length}
+                {filteredStations.filter((station) => station.status === 'reporting').length}
+              </span>
+            </div>
+            <div className="flex items-center justify-between space-x-4">
+              <span className="text-kura-muted">Alerts:</span>
+              <span className="text-kura-red font-medium">
+                {filteredStations.reduce((sum, station) => sum + station.open_alerts, 0)}
               </span>
             </div>
           </div>

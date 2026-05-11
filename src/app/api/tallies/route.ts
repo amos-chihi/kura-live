@@ -1,105 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import type { TallyEntry, ApiResponse } from '@/lib/types'
+
+import type { ApiResponse, TallyEntry } from '@/lib/types'
+import { getVerificationState, persistSourceResults, syncStationAlerts } from '@/lib/verificationDemo'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const agentId = searchParams.get('agent_id')
     const stationCode = searchParams.get('station_code')
-    const status = searchParams.get('status')
+    const source = searchParams.get('source')
+    const state = await getVerificationState()
 
-    let query = supabase
-      .from('tally_entries')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (agentId) {
-      query = query.eq('agent_id', agentId)
-    }
-    if (stationCode) {
-      query = query.eq('station_code', stationCode)
-    }
-    if (status) {
-      query = query.eq('status', status)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      return NextResponse.json<ApiResponse<TallyEntry[]>>({
-        data: null,
-        error: error.message
-      }, { status: 500 })
-    }
-
-    return NextResponse.json<ApiResponse<TallyEntry[]>>({
-      data: data || [],
-      error: null
+    const tallies = state.tally_entries.filter((entry) => {
+      if (stationCode && entry.station_code !== stationCode) {
+        return false
+      }
+      if (source && entry.source !== source) {
+        return false
+      }
+      return true
     })
+
+    return NextResponse.json<ApiResponse<TallyEntry[]>>({ data: tallies, error: null })
   } catch (error) {
-    return NextResponse.json<ApiResponse<TallyEntry[]>>({
-      data: null,
-      error: 'Internal server error'
-    }, { status: 500 })
+    return NextResponse.json<ApiResponse<null>>({ data: null, error: 'Failed to load tally entries' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { 
-      station_code, 
-      agent_id, 
-      candidate_name, 
-      party, 
-      audio_votes, 
-      form34a_votes, 
-      iebc_votes,
-      confidence = 0.90,
-      source = 'audio_ai'
-    } = body
+    const body = (await request.json()) as {
+      station_code?: string
+      agent_id?: string | null
+      candidate_name: string
+      party?: string | null
+      audio_votes?: number | null
+      form34a_votes?: number | null
+      iebc_votes?: number | null
+      confidence?: number
+      source?: 'audio_ai' | 'form34a_votes' | 'iebc_votes'
+    }
 
-    if (!candidate_name) {
-      return NextResponse.json<ApiResponse<TallyEntry>>({
+    const stationCode = body.station_code ?? 'KE-047-290-0001'
+    const source = body.source ?? 'audio_ai'
+    const votes =
+      source === 'audio_ai'
+        ? body.audio_votes
+        : source === 'form34a_votes'
+          ? body.form34a_votes
+          : body.iebc_votes
+
+    if (!body.candidate_name || votes === null || votes === undefined) {
+      return NextResponse.json<ApiResponse<null>>({
         data: null,
-        error: 'Candidate name is required'
+        error: 'Candidate name and a source-specific vote value are required',
       }, { status: 400 })
     }
 
-    const tallyData = {
-      station_code: station_code || null,
-      agent_id: agent_id || null,
-      candidate_name,
-      party: party || null,
-      audio_votes: audio_votes || null,
-      form34a_votes: form34a_votes || null,
-      iebc_votes: iebc_votes || null,
-      confidence,
-      source
-    }
+    const state = await persistSourceResults({
+      station_code: stationCode,
+      agent_id: body.agent_id ?? null,
+      source,
+      confidence: body.confidence ?? 0.9,
+      results: [
+        {
+          candidate_name: body.candidate_name,
+          party: body.party ?? null,
+          votes,
+        },
+      ],
+    })
 
-    const { data, error } = await supabase
-      .from('tally_entries')
-      .insert(tallyData)
-      .select()
-      .single()
+    const synced = await syncStationAlerts(stationCode)
+    const created = state.tally_entries.find(
+      (entry) => entry.station_code === stationCode && entry.source === source && entry.candidate_name === body.candidate_name
+    )
 
-    if (error) {
-      return NextResponse.json<ApiResponse<TallyEntry>>({
-        data: null,
-        error: error.message
-      }, { status: 500 })
-    }
-
-    return NextResponse.json<ApiResponse<TallyEntry>>({
-      data,
-      error: null
-    }, { status: 201 })
+    return NextResponse.json<ApiResponse<TallyEntry>>({ data: created ?? null, error: null }, { status: 201 })
   } catch (error) {
-    return NextResponse.json<ApiResponse<TallyEntry>>({
-      data: null,
-      error: 'Internal server error'
-    }, { status: 500 })
+    return NextResponse.json<ApiResponse<null>>({ data: null, error: 'Failed to save tally entry' }, { status: 500 })
   }
 }

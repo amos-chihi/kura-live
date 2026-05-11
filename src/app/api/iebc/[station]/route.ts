@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DEMO_IEBC_DATA } from '@/lib/demo-data'
 import type { ApiResponse } from '@/lib/types'
+import {
+  buildComparisonRows,
+  buildVerificationStats,
+  getDemoIebcPayload,
+  persistSourceResults,
+  syncStationAlerts,
+} from '@/lib/verificationDemo'
 
 export async function GET(
   request: NextRequest,
@@ -8,25 +14,41 @@ export async function GET(
 ) {
   try {
     const stationCode = params.station
-
-    // Mock IEBC portal data - in production this would fetch from actual IEBC API
-    // For demo purposes, we'll return mock data with intentional discrepancies
-    const mockIebcData = {
-      ...DEMO_IEBC_DATA,
+    const shouldPersist = new URL(request.url).searchParams.get('persist') === 'true'
+    const payload = {
+      ...getDemoIebcPayload(stationCode),
       station_code: stationCode,
-      results: DEMO_IEBC_DATA.results.map(result => ({
-        ...result,
-        // Add intentional 1-vote discrepancies for some candidates
-        votes: result.candidate_name === 'Mary Wambui' || result.candidate_name === 'Grace Akinyi'
-          ? result.votes + 1
-          : result.votes
-      })),
       last_updated: new Date().toISOString(),
-      source: 'IEBC Portal - Live Feed'
+      source: 'IEBC Portal - Demo Feed',
     }
 
-    return NextResponse.json<ApiResponse<typeof mockIebcData>>({
-      data: mockIebcData,
+    if (shouldPersist) {
+      await persistSourceResults({
+        station_code: stationCode,
+        agent_id: 'agent-001',
+        source: 'iebc_votes',
+        confidence: 0.99,
+        results: payload.results,
+      })
+      const synced = await syncStationAlerts(stationCode)
+      const comparisonRows = buildComparisonRows(synced.tally_entries, stationCode)
+
+      return NextResponse.json<ApiResponse<{
+        iebc: typeof payload
+        comparison_rows: typeof comparisonRows
+        stats: ReturnType<typeof buildVerificationStats>
+      }>>({
+        data: {
+          iebc: payload,
+          comparison_rows: comparisonRows,
+          stats: buildVerificationStats(comparisonRows),
+        },
+        error: null
+      })
+    }
+
+    return NextResponse.json<ApiResponse<typeof payload>>({
+      data: payload,
       error: null
     })
   } catch (error) {

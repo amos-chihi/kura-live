@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Video, Radio, Upload, Play, Square, ExternalLink, Users, Eye, Settings } from 'lucide-react'
+import { Video, Radio, Play, Square, ExternalLink, Users, Eye } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { Agent, LiveStream } from '@/lib/types'
-import ReactPlayer from 'react-player'
+import VideoPlayer from '@/components/ui/VideoPlayer'
 
 interface StreamPanelProps {
   agent: Agent | null
@@ -33,12 +33,18 @@ export default function StreamPanel({
   })
 
   const [isPreviewMode, setIsPreviewMode] = useState(false)
+  const [preferredPlatform, setPreferredPlatform] = useState<'tiktok' | 'youtube' | 'platform'>('tiktok')
 
   const handleUrlChange = (platform: keyof typeof streamUrls, url: string) => {
     setStreamUrls(prev => ({ ...prev, [platform]: url }))
+    setPreferredPlatform(platform)
   }
 
   const getActivePlatform = () => {
+    if (preferredPlatform === 'tiktok' && streamUrls.tiktok) return 'tiktok'
+    if (preferredPlatform === 'youtube' && streamUrls.youtube) return 'youtube'
+    if (preferredPlatform === 'platform' && streamUrls.platform) return 'platform'
+    if (streamUrls.tiktok) return 'tiktok'
     if (streamUrls.youtube) return 'youtube'
     if (streamUrls.tiktok) return 'tiktok'
     if (streamUrls.platform) return 'platform'
@@ -172,30 +178,35 @@ export default function StreamPanel({
       </div>
 
       {/* Stream Preview */}
-      {isPreviewMode && activeUrl && (
+      {isPreviewMode && activeUrl && activePlatform && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-kura-surface border border-kura-border rounded-lg p-6"
         >
-          <h3 className="text-lg font-semibold text-white mb-4">Stream Preview</h3>
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Stream Preview</h3>
+              <p className="text-sm text-gray-400">
+                Use the Transcription tab to capture live TikTok tab audio and send it into the verification pipeline.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => window.open(activeUrl, '_blank', 'noopener,noreferrer')}
+              className="inline-flex items-center justify-center rounded-lg border border-kura-border bg-kura-navy px-4 py-2 text-sm text-white transition-colors hover:bg-kura-navy-mid"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Active Feed
+            </button>
+          </div>
           <div className="aspect-video bg-black rounded-lg overflow-hidden">
-            <ReactPlayer
+            <VideoPlayer
               url={activeUrl}
-              width="100%"
-              height="100%"
-              playing={isStreaming}
-              controls={true}
-              config={{
-                youtube: {
-                  playerVars: {
-                    autoplay: isStreaming ? 1 : 0,
-                    controls: 1,
-                    modestbranding: 1,
-                    rel: 0
-                  }
-                }
-              }}
+              platform={activePlatform}
+              isLive={isStreaming}
+              title={`${activePlatform.toUpperCase()} station feed`}
+              className="h-full w-full"
             />
           </div>
         </motion.div>

@@ -1,0 +1,601 @@
+{
+  "version": 1,
+  "last_seeded_at": "2026-05-04T10:47:23.099Z",
+  "demo_audio_samples": [
+    {
+      "id": "audio-westlands-official",
+      "label": "Westlands RO final announcement",
+      "station_code": "KE-047-290-0001",
+      "transcript_lines": [
+        "The Returning Officer is now announcing the final results for Westlands Constituency.",
+        "John Kariuki received 14,523 votes.",
+        "Mary Wambui got 12,891 votes.",
+        "Peter Omondi received 9,044 votes.",
+        "Grace Akinyi got 3,210 votes.",
+        "Total valid votes cast: 39,668. Total rejected votes: 412.",
+        "The presiding officer confirms these results as per Form 34A duly signed."
+      ],
+      "transcript_text": "The Returning Officer is now announcing the final results for Westlands Constituency. John Kariuki received 14,523 votes. Mary Wambui got 12,891 votes. Peter Omondi received 9,044 votes. Grace Akinyi got 3,210 votes. Total valid votes cast: 39,668. Total rejected votes: 412. The presiding officer confirms these results as per Form 34A duly signed.",
+      "description": "A clean returning-officer announcement with one-vote drift against Form 34A and IEBC."
+    },
+    {
+      "id": "audio-westlands-ward-recap",
+      "label": "Ward verification recap",
+      "station_code": "KE-047-290-0001",
+      "transcript_lines": [
+        "Polling station Westlands Primary School Stream 1 verification is now starting.",
+        "John Kariuki received 14,523 votes.",
+        "Mary Wambui received 12,890 votes.",
+        "Peter Omondi got 9,044 votes.",
+        "Grace Akinyi got 3,210 votes.",
+        "The station total valid votes stand at 39,667."
+      ],
+      "transcript_text": "Polling station Westlands Primary School Stream 1 verification is now starting. John Kariuki received 14,523 votes. Mary Wambui received 12,890 votes. Peter Omondi got 9,044 votes. Grace Akinyi got 3,210 votes. The station total valid votes stand at 39,667.",
+      "description": "A second audio sample with a larger discrepancy for Mary Wambui."
+    }
+  ],
+  "demo_form_samples": [
+    {
+      "id": "form-westlands-a",
+      "label": "Form 34A - Station copy A",
+      "station_code": "KE-047-290-0001",
+      "preview_path": "/demo/forms/KE-047-290-0001-form34a-a.svg",
+      "extracted_results": [
+        {
+          "candidate_name": "John Kariuki",
+          "party": "UDA",
+          "votes": 14523
+        },
+        {
+          "candidate_name": "Mary Wambui",
+          "party": "ODM",
+          "votes": 12892
+        },
+        {
+          "candidate_name": "Peter Omondi",
+          "party": "ANC",
+          "votes": 9044
+        },
+        {
+          "candidate_name": "Grace Akinyi",
+          "party": "WDM-K",
+          "votes": 3210
+        }
+      ],
+      "total_valid_votes": 39669,
+      "total_rejected_votes": 412,
+      "presiding_officer": "Jane M. Njoroge"
+    },
+    {
+      "id": "form-westlands-b",
+      "label": "Form 34A - Station copy B",
+      "station_code": "KE-047-290-0001",
+      "preview_path": "/demo/forms/KE-047-290-0001-form34a-b.svg",
+      "extracted_results": [
+        {
+          "candidate_name": "John Kariuki",
+          "party": "UDA",
+          "votes": 14523
+        },
+        {
+          "candidate_name": "Mary Wambui",
+          "party": "ODM",
+          "votes": 12893
+        },
+        {
+          "candidate_name": "Peter Omondi",
+          "party": "ANC",
+          "votes": 9044
+        },
+        {
+          "candidate_name": "Grace Akinyi",
+          "party": "WDM-K",
+          "votes": 3210
+        }
+      ],
+      "total_valid_votes": 39670,
+      "total_rejected_votes": 412,
+      "presiding_officer": "Jane M. Njoroge"
+    },
+    {
+      "id": "form-westlands-c",
+      "label": "Form 34A - Station copy C",
+      "station_code": "KE-047-290-0001",
+      "preview_path": "/demo/forms/KE-047-290-0001-form34a-c.svg",
+      "extracted_results": [
+        {
+          "candidate_name": "John Kariuki",
+          "party": "UDA",
+          "votes": 14523
+        },
+        {
+          "candidate_name": "Mary Wambui",
+          "party": "ODM",
+          "votes": 12891
+        },
+        {
+          "candidate_name": "Peter Omondi",
+          "party": "ANC",
+          "votes": 9044
+        },
+        {
+          "candidate_name": "Grace Akinyi",
+          "party": "WDM-K",
+          "votes": 3210
+        }
+      ],
+      "total_valid_votes": 39668,
+      "total_rejected_votes": 412,
+      "presiding_officer": "Jane M. Njoroge"
+    }
+  ],
+  "demo_iebc_payloads": [
+    {
+      "station_code": "KE-047-290-0001",
+      "results": [
+        {
+          "candidate_name": "John Kariuki",
+          "party": "UDA",
+          "votes": 14522
+        },
+        {
+          "candidate_name": "Mary Wambui",
+          "party": "ODM",
+          "votes": 12891
+        },
+        {
+          "candidate_name": "Peter Omondi",
+          "party": "ANC",
+          "votes": 9044
+        },
+        {
+          "candidate_name": "Grace Akinyi",
+          "party": "WDM-K",
+          "votes": 3211
+        }
+      ],
+      "last_updated": "2027-08-08T15:45:00Z",
+      "source": "IEBC Portal"
+    }
+  ],
+  "live_sessions": [
+    {
+      "id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "agent_id": "agent-001",
+      "station_code": "KE-047-290-0001",
+      "platform": "tiktok",
+      "source_url": "https://www.tiktok.com/@jmwangi_iebc/live",
+      "status": "monitoring",
+      "started_at": "2026-05-11T14:40:18.014Z",
+      "updated_at": "2026-05-11T14:40:18.014Z",
+      "viewer_count": 0,
+      "bitrate_kbps": 0,
+      "latency_ms": 0,
+      "health": "healthy",
+      "last_error": null
+    }
+  ],
+  "transcript_records": [
+    {
+      "id": "3e0b9c2e-382c-4c0c-aa68-7db505633577",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "sample_id": "audio-westlands-official",
+      "source_label": "Westlands RO final announcement",
+      "transcript_text": "The Returning Officer is now announcing the final results for Westlands Constituency. John Kariuki received 14,523 votes. Mary Wambui got 12,891 votes. Peter Omondi received 9,044 votes. Grace Akinyi got 3,210 votes. Total valid votes cast: 39,668. Total rejected votes: 412. The presiding officer confirms these results as per Form 34A duly signed.",
+      "extracted_votes": [
+        {
+          "candidate_name": "The Returning Officer is now announcing the final results for Westlands Constituency. John Kariuki",
+          "votes": 14523,
+          "confidence": 0.91
+        },
+        {
+          "candidate_name": "Mary Wambui",
+          "votes": 12891,
+          "confidence": 0.91
+        },
+        {
+          "candidate_name": "Peter Omondi",
+          "votes": 9044,
+          "confidence": 0.91
+        },
+        {
+          "candidate_name": "Grace Akinyi",
+          "votes": 3210,
+          "confidence": 0.91
+        }
+      ],
+      "created_at": "2026-05-04T10:47:23.100Z"
+    }
+  ],
+  "transcript_segments": [
+    {
+      "id": "804f1258-1907-414e-bebc-ad57521da756",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 0,
+      "transcript_text": "The Returning Officer is now announcing the final results for Westlands Constituency.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "cc2f5af9-8050-425a-b38b-23db7b80d417",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 1,
+      "transcript_text": "John Kariuki received 14,523 votes.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "4eb6d231-8e43-4722-88e9-15835362c9a2",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 2,
+      "transcript_text": "Mary Wambui got 12,891 votes.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "30f3a1c7-d601-4168-bafe-a9b55ce6414b",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 3,
+      "transcript_text": "Peter Omondi received 9,044 votes.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "da898311-7558-4132-bd79-740d6a3e5ee5",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 4,
+      "transcript_text": "Grace Akinyi got 3,210 votes.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "668246eb-f31e-412a-b402-7f9a41a1ace3",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 5,
+      "transcript_text": "Total valid votes cast: 39,668. Total rejected votes: 412.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    },
+    {
+      "id": "a87c755e-edd4-482a-bac8-39459061cfdf",
+      "session_id": "94088cda-d42a-41b9-8cdc-f5e9cb6bff48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "chunk_index": 6,
+      "transcript_text": "The presiding officer confirms these results as per Form 34A duly signed.",
+      "confidence": 0.91,
+      "created_at": "2026-05-11T14:40:18.018Z"
+    }
+  ],
+  "form_uploads": [
+    {
+      "id": "c948a050-3a74-45cc-9240-b5ba9e85ff75",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "form_type": "34A",
+      "file_path": "/demo/forms/KE-047-290-0001-form34a-a.svg",
+      "sha256_hash": "8296d9bd66d5653de4531469894501699055fe9478ea122d6dd35fb39bf3aa09",
+      "scan_status": "complete",
+      "extracted_data": {
+        "station_code": "KE-047-290-0001",
+        "results": [
+          {
+            "candidate_name": "John Kariuki",
+            "party": "UDA",
+            "votes": 14523
+          },
+          {
+            "candidate_name": "Mary Wambui",
+            "party": "ODM",
+            "votes": 12892
+          },
+          {
+            "candidate_name": "Peter Omondi",
+            "party": "ANC",
+            "votes": 9044
+          },
+          {
+            "candidate_name": "Grace Akinyi",
+            "party": "WDM-K",
+            "votes": 3210
+          }
+        ],
+        "total_valid_votes": 39669,
+        "total_rejected_votes": 412,
+        "presiding_officer": "Jane M. Njoroge"
+      },
+      "created_at": "2026-05-04T10:47:23.100Z"
+    }
+  ],
+  "tally_entries": [
+    {
+      "id": "9df0c953-9a1b-45d3-a470-9cbd56b723d0",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "John Kariuki",
+      "party": "UDA",
+      "audio_votes": 14523,
+      "form34a_votes": null,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.91,
+      "source": "audio_ai",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "da5b67a7-c1a2-42a8-819c-74a2bbb43293",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Mary Wambui",
+      "party": "ODM",
+      "audio_votes": 12891,
+      "form34a_votes": null,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.91,
+      "source": "audio_ai",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "9f857520-3ec4-4ea5-8f30-08c038ffcb24",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Peter Omondi",
+      "party": "ANC",
+      "audio_votes": 9044,
+      "form34a_votes": null,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.91,
+      "source": "audio_ai",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "68ab54d0-9a73-4fff-a73d-2fdf593c7813",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Grace Akinyi",
+      "party": "WDM-K",
+      "audio_votes": 3210,
+      "form34a_votes": null,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.91,
+      "source": "audio_ai",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "f0ab53ac-c894-4788-84bf-cb0abdbeb2f2",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "John Kariuki",
+      "party": "UDA",
+      "audio_votes": null,
+      "form34a_votes": 14523,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.97,
+      "source": "form34a_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "fcc28ea7-80ce-41ee-9a71-e22a8a10032e",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Mary Wambui",
+      "party": "ODM",
+      "audio_votes": null,
+      "form34a_votes": 12892,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.97,
+      "source": "form34a_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "0d233489-7303-4628-97dc-47955cc1b067",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Peter Omondi",
+      "party": "ANC",
+      "audio_votes": null,
+      "form34a_votes": 9044,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.97,
+      "source": "form34a_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "35a0e519-e1e3-482d-9d89-8875b4b5befb",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Grace Akinyi",
+      "party": "WDM-K",
+      "audio_votes": null,
+      "form34a_votes": 3210,
+      "iebc_votes": null,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.97,
+      "source": "form34a_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "d99ab2c9-2c25-409f-9ded-613cc70dd2d8",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "John Kariuki",
+      "party": "UDA",
+      "audio_votes": null,
+      "form34a_votes": null,
+      "iebc_votes": 14522,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.99,
+      "source": "iebc_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "c7083b72-b4be-4254-b76c-c8a139712002",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Mary Wambui",
+      "party": "ODM",
+      "audio_votes": null,
+      "form34a_votes": null,
+      "iebc_votes": 12891,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.99,
+      "source": "iebc_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "e8c3950b-26a0-4b64-b98e-0100376e59d2",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Peter Omondi",
+      "party": "ANC",
+      "audio_votes": null,
+      "form34a_votes": null,
+      "iebc_votes": 9044,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.99,
+      "source": "iebc_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    },
+    {
+      "id": "597dd635-0512-42a9-845d-4ba1e4ef126b",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Grace Akinyi",
+      "party": "WDM-K",
+      "audio_votes": null,
+      "form34a_votes": null,
+      "iebc_votes": 3211,
+      "max_delta": 0,
+      "status": "pending",
+      "confidence": 0.99,
+      "source": "iebc_votes",
+      "created_at": "2026-05-04T10:47:23.099Z",
+      "updated_at": "2026-05-04T10:47:23.099Z"
+    }
+  ],
+  "alerts": [
+    {
+      "id": "96be6485-d217-4c76-8e35-79b379ed4ed4",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Grace Akinyi",
+      "delta": 1,
+      "audio_votes": 3210,
+      "form34a_votes": 3210,
+      "iebc_votes": 3211,
+      "severity": "warning",
+      "alert_status": "open",
+      "created_at": "2026-05-04T10:47:23.203Z"
+    },
+    {
+      "id": "e6960ebd-50b3-4045-a3b6-2333e5626c48",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "John Kariuki",
+      "delta": 1,
+      "audio_votes": 14523,
+      "form34a_votes": 14523,
+      "iebc_votes": 14522,
+      "severity": "warning",
+      "alert_status": "open",
+      "created_at": "2026-05-04T10:47:23.203Z"
+    },
+    {
+      "id": "f7b1149c-a97d-4878-8597-5c513972d765",
+      "station_code": "KE-047-290-0001",
+      "agent_id": "agent-001",
+      "candidate_name": "Mary Wambui",
+      "delta": 1,
+      "audio_votes": 12891,
+      "form34a_votes": 12892,
+      "iebc_votes": 12891,
+      "severity": "warning",
+      "alert_status": "open",
+      "created_at": "2026-05-04T10:47:23.203Z"
+    }
+  ],
+  "station_activity": [
+    {
+      "id": "89ad42e3-9a3e-4c8d-8b7f-788f9cdde40f",
+      "station_code": "KE-047-290-0001",
+      "activity_type": "stream_started",
+      "message": "Monitoring session started for Westlands Primary School Stream 1",
+      "created_at": "2026-05-11T14:40:18.019Z"
+    }
+  ],
+  "verification_events": [
+    {
+      "id": "99e2267a-1e11-46df-8105-393b4754122f",
+      "station_code": "KE-047-290-0001",
+      "candidate_name": "Grace Akinyi",
+      "delta": 1,
+      "severity": "warning",
+      "created_at": "2026-05-11T14:40:18.019Z"
+    },
+    {
+      "id": "e3021c0e-6797-4419-b593-3c35dfd8fa1a",
+      "station_code": "KE-047-290-0001",
+      "candidate_name": "John Kariuki",
+      "delta": 1,
+      "severity": "warning",
+      "created_at": "2026-05-11T14:40:18.019Z"
+    },
+    {
+      "id": "e8fd5cdd-5f9a-4f34-bc6a-c1b02fcb2d5a",
+      "station_code": "KE-047-290-0001",
+      "candidate_name": "Mary Wambui",
+      "delta": 1,
+      "severity": "warning",
+      "created_at": "2026-05-11T14:40:18.019Z"
+    },
+    {
+      "id": "65eec91f-f943-4478-bef2-4296a7594dff",
+      "station_code": "KE-047-290-0001",
+      "candidate_name": "Peter Omondi",
+      "delta": 0,
+      "severity": "info",
+      "created_at": "2026-05-11T14:40:18.019Z"
+    }
+  ]
+}

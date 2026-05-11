@@ -10,7 +10,28 @@ import ComparisonPanel from '@/components/agent/ComparisonPanel'
 import AlertsPanel from '@/components/agent/AlertsPanel'
 import AgentSidebar from '@/components/agent/AgentSidebar'
 import AgentTopBar from '@/components/agent/AgentTopBar'
+import Toast from '@/components/ui/Toast'
 import { Agent, LiveStream } from '@/lib/types'
+import { useAlertStore } from '@/store/alertStore'
+import { useTallyStore } from '@/store/tallyStore'
+import { useToastStore } from '@/store/toastStore'
+
+interface DemoAudioSample {
+  id: string
+  label: string
+  description: string
+}
+
+interface DemoFormSample {
+  id: string
+  label: string
+  preview_path: string
+}
+
+interface DemoBootstrapResponse {
+  demo_audio_samples: DemoAudioSample[]
+  demo_form_samples: DemoFormSample[]
+}
 
 export default function AgentDashboardClient() {
   const searchParams = useSearchParams()
@@ -19,6 +40,16 @@ export default function AgentDashboardClient() {
   const [currentStream, setCurrentStream] = useState<LiveStream | null>(null)
   const [streamTimer, setStreamTimer] = useState(0)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [demoAudioSamples, setDemoAudioSamples] = useState<DemoAudioSample[]>([])
+  const [demoFormSamples, setDemoFormSamples] = useState<DemoFormSample[]>([])
+
+  const setTallies = useTallyStore((state) => state.setTallies)
+  const setAlerts = useAlertStore((state) => state.setAlerts)
+  const toastMessage = useToastStore((state) => state.message)
+  const toastType = useToastStore((state) => state.type)
+  const toastVisible = useToastStore((state) => state.isVisible)
+  const hideToast = useToastStore((state) => state.hideToast)
+  const showToast = useToastStore((state) => state.showToast)
 
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -61,6 +92,44 @@ export default function AgentDashboardClient() {
     }
     setCurrentStream(mockStream)
   }, [])
+
+  useEffect(() => {
+    const bootstrapDemo = async () => {
+      try {
+        const [bootstrapResult, talliesResult, alertsResult] = await Promise.allSettled([
+          fetch('/api/demo/bootstrap', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reset: false }) }),
+          fetch('/api/tallies?station_code=KE-047-290-0001'),
+          fetch('/api/alerts?station_code=KE-047-290-0001'),
+        ])
+
+        if (bootstrapResult.status === 'fulfilled') {
+          const bootstrapPayload = (await bootstrapResult.value.json()) as { data: DemoBootstrapResponse | null; error: string | null }
+          if (bootstrapPayload.data) {
+            setDemoAudioSamples(bootstrapPayload.data.demo_audio_samples)
+            setDemoFormSamples(bootstrapPayload.data.demo_form_samples)
+          }
+        }
+
+        if (talliesResult.status === 'fulfilled') {
+          const talliesPayload = (await talliesResult.value.json()) as { data: ReturnType<typeof useTallyStore.getState>['tallies'] | null; error: string | null }
+          if (talliesPayload.data) {
+            setTallies(talliesPayload.data)
+          }
+        }
+
+        if (alertsResult.status === 'fulfilled') {
+          const alertsPayload = (await alertsResult.value.json()) as { data: ReturnType<typeof useAlertStore.getState>['alerts'] | null; error: string | null }
+          if (alertsPayload.data) {
+            setAlerts(alertsPayload.data)
+          }
+        }
+      } catch (error) {
+        showToast('error', 'Unable to bootstrap demo verification data.')
+      }
+    }
+
+    void bootstrapDemo()
+  }, [setAlerts, setTallies, showToast])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -128,9 +197,9 @@ export default function AgentDashboardClient() {
           />
         )
       case 'transcription':
-        return <TranscriptionPanel agent={agent} />
+        return <TranscriptionPanel agent={agent} demoAudioSamples={demoAudioSamples} />
       case 'results':
-        return <ResultsPanel agent={agent} />
+        return <ResultsPanel agent={agent} demoFormSamples={demoFormSamples} />
       case 'comparison':
         return <ComparisonPanel agent={agent} />
       case 'alerts':
@@ -183,6 +252,12 @@ export default function AgentDashboardClient() {
 
   return (
     <div className="min-h-screen bg-kura-navy">
+      <Toast
+        type={toastType}
+        message={toastMessage}
+        isVisible={toastVisible}
+        onClose={hideToast}
+      />
       <AgentTopBar agent={agent} isStreaming={isStreaming} streamTimer={streamTimer} formatTime={formatTime} />
       <div className="flex">
         <AgentSidebar activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />

@@ -2,7 +2,7 @@ import { UserRole } from './session'
 
 const AGENT_PATHS = ['/agent']
 const ADMIN_PATHS = ['/admin', '/dashboard', '/agent-registration']
-const SHARED_PATHS = ['/', '/results', '/results-tally', '/map-view', '/stream-test']
+const SHARED_PATHS = ['/', '/dashboard', '/results', '/results-tally', '/map-view', '/stream-test']
 
 function matchesRoute(pathname: string, route: string) {
   return pathname === route || pathname.startsWith(`${route}/`) || pathname.startsWith(`${route}?`)

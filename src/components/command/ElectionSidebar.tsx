@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   BarChart3, 
@@ -28,9 +27,22 @@ interface NavItem {
   badge?: number
 }
 
-const navigationItems: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
-  { id: 'streams', label: 'Live Streams', icon: Radio, badge: 12 },
+interface ElectionSidebarProps {
+  activeSection: string
+  onSelectSection: (sectionId: string) => void
+  liveStreamCount: number
+  incidentCount: number
+}
+
+export default function ElectionSidebar({
+  activeSection,
+  onSelectSection,
+  liveStreamCount,
+  incidentCount,
+}: ElectionSidebarProps) {
+  const navigationItems: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+  { id: 'streams', label: 'Live Streams', icon: Radio, badge: liveStreamCount },
   { id: 'urls', label: 'Stream URLs', icon: Link },
   { id: 'ai', label: 'AI Processing', icon: Brain },
   { id: 'analytics', label: 'Predictive Analytics', icon: TrendingUp },
@@ -39,20 +51,19 @@ const navigationItems: NavItem[] = [
   { id: 'map', label: 'Map View', icon: Map, href: '/map-view' },
   { id: 'agents', label: 'Agents', icon: Users },
   { id: 'registration', label: 'Agent Registration', icon: UserPlus, href: '/agent-registration' },
-  { id: 'incidents', label: 'Incidents', icon: AlertTriangle, badge: 3 },
+  { id: 'incidents', label: 'Incidents', icon: AlertTriangle, badge: incidentCount },
   { id: 'security', label: 'Security Monitor', icon: Shield },
   { id: 'communications', label: 'Communications', icon: MessageSquare }
 ]
-
-export default function ElectionSidebar() {
-  const [activeSection, setActiveSection] = useState('dashboard')
   const router = useRouter()
 
   const handleNavigation = (item: NavItem) => {
-    setActiveSection(item.id)
     if (item.href) {
       router.push(item.href)
+      return
     }
+
+    onSelectSection(item.id)
   }
 
   return (
