@@ -441,7 +441,7 @@ export function TranscriptionPanel({ agent, demoAudioSamples }: TranscriptionPan
             <div className="rounded-lg border border-kura-border bg-kura-navy p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-medium">Bundled Demo Audio</h3>
-                <span className="text-xs text-kura-accent">Whisper-ready demo samples</span>
+                <span className="text-xs text-kura-accent">Foundry / Whisper-ready demo samples</span>
               </div>
               <div className="space-y-3">
                 {availableSamples.map((sample) => (
@@ -510,7 +510,7 @@ export function TranscriptionPanel({ agent, demoAudioSamples }: TranscriptionPan
                 ) : (
                   <>
                     <div className="text-white font-medium">Upload a prerecorded audio or screen recording file</div>
-                    <div className="mt-1 text-sm text-gray-400">If `OPENAI_API_KEY` is configured, Whisper will transcribe it. Otherwise the panel falls back to the matching demo script.</div>
+                    <div className="mt-1 text-sm text-gray-400">If Foundry (`AZURE_FOUNDRY_*`) or `OPENAI_API_KEY` is configured, live STT will transcribe it. Otherwise the panel falls back to the matching demo script.</div>
                   </>
                 )}
               </div>

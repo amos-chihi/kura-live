@@ -30,14 +30,38 @@ npm install
 
 ### 2. Environment Setup
 
-Create a `.env.local` file with your Supabase credentials:
+Copy `.env.example` to `.env.local` and fill in values:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Microsoft Foundry transcription (preferred)
+AZURE_FOUNDRY_ENDPOINT=https://your-resource.openai.azure.com/openai/v1
+AZURE_FOUNDRY_API_KEY=
+AZURE_FOUNDRY_TRANSCRIPTION_DEPLOYMENT=gpt-4o-mini-transcribe
+TRANSCRIPTION_PROVIDER=auto
 ```
+
+#### Transcription (Microsoft Foundry)
+
+Live and upload transcription call `/api/transcription` and `/api/transcription/live`. With `TRANSCRIPTION_PROVIDER=auto` (default):
+
+1. **Foundry / Azure OpenAI** when `AZURE_FOUNDRY_ENDPOINT` + `AZURE_FOUNDRY_API_KEY` (or `AZURE_OPENAI_*` aliases) are set
+2. **Public OpenAI Whisper** (`OPENAI_API_KEY`, model `whisper-1`) as fallback
+3. **Demo scripts** when neither provider is configured
+
+**Deploy a speech model** on the Foundry resource — chat LLMs (Llama, Grok, DeepSeek) are not used for STT. Recommended deployments:
+
+| Deployment | Why |
+|---|---|
+| `gpt-4o-mini-transcribe` (default) | Best latency/cost for live 8s MediaRecorder chunks |
+| `gpt-4o-transcribe` | Higher accuracy for noisy announcement audio |
+| `whisper` | Classic Azure Whisper; solid batch STT |
+
+Optional cleanup: set `AZURE_FOUNDRY_TRANSCRIPT_CLEANUP=true` and optionally `AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=Llama-3.3-70B-Instruct` (or `DeepSeek-V4-Pro`) to lightly normalize ASR text after STT. Do not use embedding or document-AI deployments for cleanup.
 
 ### 3. Start Development Server
 
