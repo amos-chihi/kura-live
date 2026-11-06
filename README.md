@@ -30,14 +30,42 @@ npm install
 
 ### 2. Environment Setup
 
-Create a `.env.local` file with your Supabase credentials:
+Copy `.env.example` to `.env.local` and fill in values:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Azure Speech MAI-Transcribe (primary — AgileBoard-compatible)
+AZURE_SPEECH_ENDPOINT=https://eastus.api.cognitive.microsoft.com/
+AZURE_SPEECH_API_KEY=
+AZURE_SPEECH_TRANSCRIPTION_MODEL=mai-transcribe-1.5
+TRANSCRIPTION_PROVIDER=auto
+
+# Optional Foundry chat cleanup / demoted STT fallback
+# AZURE_FOUNDRY_ENDPOINT=https://your-resource.openai.azure.com
+# AZURE_FOUNDRY_API_KEY=
+# AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=DeepSeek-V4-Pro
 ```
+
+#### Transcription (Azure Speech MAI-Transcribe)
+
+Live and upload transcription call `/api/transcription` and `/api/transcription/live`. With `TRANSCRIPTION_PROVIDER=auto` (default):
+
+1. **Azure Speech** Fast Transcription + **MAI-Transcribe-1.5** when `AZURE_SPEECH_ENDPOINT` + `AZURE_SPEECH_API_KEY` (or `SPEECH_*` aliases) are set
+2. **Public OpenAI Whisper** (`OPENAI_API_KEY`, model `whisper-1`) as optional fallback
+3. **Foundry** `/audio/transcriptions` only if explicitly configured / last resort
+4. **Demo scripts** when no provider is configured
+
+API shape (sync, good for 8s chunks + uploads):
+
+`POST {AZURE_SPEECH_ENDPOINT}/speechtotext/transcriptions:transcribe?api-version=2025-10-15`  
+multipart `audio` + `definition.enhancedMode = { enabled: true, model: "MAI-Transcribe-1.5" }`  
+auth: `Ocp-Apim-Subscription-Key`
+
+Optional cleanup: set `AZURE_FOUNDRY_TRANSCRIPT_CLEANUP=true` with `AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=DeepSeek-V4-Pro` on the Foundry/OpenAI endpoint.
 
 ### 3. Start Development Server
 
