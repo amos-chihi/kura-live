@@ -22,8 +22,8 @@ interface TranscriptionApiPayload {
 }
 
 /**
- * Call Microsoft Foundry (Azure OpenAI v1-compatible) audio transcriptions.
- * Deployment must be a speech model (whisper / gpt-4o-*-transcribe), not chat LLMs.
+ * Optional Azure OpenAI / Foundry `/audio/transcriptions` path (demoted).
+ * Prefer Azure Speech MAI-Transcribe for STT; keep this for compatibility.
  */
 export async function transcribeWithFoundry(
   file: File,
@@ -32,7 +32,6 @@ export async function transcribeWithFoundry(
   const form = new FormData()
   form.append('file', file, file.name || 'audio.webm')
   form.append('model', config.transcriptionDeployment)
-  // JSON response is smaller and easier to parse than verbose formats.
   form.append('response_format', 'json')
 
   const response = await fetch(buildFoundryAudioTranscriptionUrl(config.endpoint), {
@@ -71,8 +70,9 @@ export async function transcribeWithFoundry(
 }
 
 /**
- * Optional light cleanup of noisy STT output via a chat deployment.
+ * Optional light cleanup of noisy STT output via a Foundry chat deployment.
  * Disabled by default — enable with AZURE_FOUNDRY_TRANSCRIPT_CLEANUP=true.
+ * Default deployment: DeepSeek-V4-Pro (AgileBoard).
  */
 export async function cleanupTranscriptWithFoundry(
   transcript: string,
@@ -82,30 +82,33 @@ export async function cleanupTranscriptWithFoundry(
     return transcript
   }
 
-  const response = await fetch(buildFoundryChatCompletionsUrl(config.endpoint), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': config.apiKey,
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.cleanupDeployment,
-      temperature: 0,
-      max_tokens: 512,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You clean election announcement speech-to-text. Fix obvious ASR errors, keep candidate names and vote numbers exact, preserve English/Swahili wording, and return only the cleaned transcript with no commentary.',
-        },
-        {
-          role: 'user',
-          content: transcript,
-        },
-      ],
-    }),
-  })
+  const response = await fetch(
+    buildFoundryChatCompletionsUrl(config.endpoint, config.apiVersion),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': config.apiKey,
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.cleanupDeployment.trim(),
+        temperature: 0,
+        max_tokens: 512,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You clean election announcement speech-to-text. Fix obvious ASR errors, keep candidate names and vote numbers exact, preserve English/Swahili wording, and return only the cleaned transcript with no commentary.',
+          },
+          {
+            role: 'user',
+            content: transcript,
+          },
+        ],
+      }),
+    }
+  )
 
   if (!response.ok) {
     return transcript

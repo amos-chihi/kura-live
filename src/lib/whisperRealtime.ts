@@ -1,4 +1,9 @@
 import {
+  AzureSpeechTranscriptionError,
+  transcribeWithAzureSpeech,
+} from '@/lib/azureSpeechTranscription'
+import {
+  resolveAzureSpeechConfig,
   resolveFoundryConfig,
   resolveTranscriptionProviderPreference,
   type TranscriptionProviderName,
@@ -24,6 +29,14 @@ function demoResult(fallbackTranscript: string, confidence = 0.86): WhisperRealt
     confidence,
     provider: 'demo',
   }
+}
+
+async function maybeCleanup(transcript: string): Promise<string> {
+  const foundry = resolveFoundryConfig()
+  if (!foundry?.cleanupEnabled) {
+    return transcript
+  }
+  return cleanupTranscriptWithFoundry(transcript, foundry)
 }
 
 async function transcribeWithOpenAI(
@@ -53,7 +66,8 @@ async function transcribeWithOpenAI(
     }
 
     const payload = (await response.json()) as { text?: string }
-    const transcript = payload.text?.trim() || fallbackTranscript
+    const raw = payload.text?.trim() || fallbackTranscript
+    const transcript = await maybeCleanup(raw)
     return {
       transcript_text: transcript,
       extracted_votes: parseVotesFromTranscript(transcript),
@@ -65,9 +79,30 @@ async function transcribeWithOpenAI(
   }
 }
 
+async function transcribeWithSpeechProvider(
+  file: File
+): Promise<WhisperRealtimeResult> {
+  const config = resolveAzureSpeechConfig()
+  if (!config) {
+    throw new AzureSpeechTranscriptionError(
+      'Azure Speech endpoint/API key are not configured',
+      0
+    )
+  }
+
+  const raw = await transcribeWithAzureSpeech(file, config)
+  const transcript = await maybeCleanup(raw)
+
+  return {
+    transcript_text: transcript,
+    extracted_votes: parseVotesFromTranscript(transcript),
+    confidence: 0.95,
+    provider: 'speech',
+  }
+}
+
 async function transcribeWithFoundryProvider(
-  file: File,
-  fallbackTranscript: string
+  file: File
 ): Promise<WhisperRealtimeResult> {
   const config = resolveFoundryConfig()
   if (!config) {
@@ -89,9 +124,10 @@ async function transcribeWithFoundryProvider(
  * Transcribe one live/upload audio chunk.
  *
  * Provider order when TRANSCRIPTION_PROVIDER=auto (default):
- * 1. Microsoft Foundry / Azure OpenAI (AZURE_FOUNDRY_* or AZURE_OPENAI_*)
+ * 1. Azure Speech MAI-Transcribe (AZURE_SPEECH_* / SPEECH_*)
  * 2. Public OpenAI Whisper (OPENAI_API_KEY)
- * 3. Demo fallback transcript
+ * 3. Optional Foundry `/audio/transcriptions` if configured
+ * 4. Demo fallback transcript
  */
 export async function transcribeAudioChunk(
   file: File,
@@ -103,9 +139,9 @@ export async function transcribeAudioChunk(
     return demoResult(fallbackTranscript)
   }
 
-  if (preference === 'foundry') {
+  if (preference === 'speech') {
     try {
-      return await transcribeWithFoundryProvider(file, fallbackTranscript)
+      return await transcribeWithSpeechProvider(file)
     } catch {
       return demoResult(fallbackTranscript, 0.82)
     }
@@ -115,21 +151,44 @@ export async function transcribeAudioChunk(
     return transcribeWithOpenAI(file, fallbackTranscript)
   }
 
-  // auto
-  if (resolveFoundryConfig()) {
+  if (preference === 'foundry') {
     try {
-      return await transcribeWithFoundryProvider(file, fallbackTranscript)
-    } catch (error) {
-      // Missing STT deployment or transient Foundry failure → try OpenAI, then demo.
+      return await transcribeWithFoundryProvider(file)
+    } catch {
+      return demoResult(fallbackTranscript, 0.82)
+    }
+  }
+
+  // auto — Speech first (AgileBoard path)
+  if (resolveAzureSpeechConfig()) {
+    try {
+      return await transcribeWithSpeechProvider(file)
+    } catch {
       if (process.env.OPENAI_API_KEY) {
         return transcribeWithOpenAI(file, fallbackTranscript)
       }
-      if (error instanceof FoundryTranscriptionError && error.code === 'DeploymentNotFound') {
-        return demoResult(fallbackTranscript, 0.8)
+      if (resolveFoundryConfig()) {
+        try {
+          return await transcribeWithFoundryProvider(file)
+        } catch {
+          return demoResult(fallbackTranscript, 0.82)
+        }
       }
       return demoResult(fallbackTranscript, 0.82)
     }
   }
 
-  return transcribeWithOpenAI(file, fallbackTranscript)
+  if (process.env.OPENAI_API_KEY) {
+    return transcribeWithOpenAI(file, fallbackTranscript)
+  }
+
+  if (resolveFoundryConfig()) {
+    try {
+      return await transcribeWithFoundryProvider(file)
+    } catch {
+      return demoResult(fallbackTranscript, 0.82)
+    }
+  }
+
+  return demoResult(fallbackTranscript)
 }

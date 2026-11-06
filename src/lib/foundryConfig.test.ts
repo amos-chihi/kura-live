@@ -2,70 +2,78 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  AZURE_SPEECH_DEFAULT_API_VERSION,
+  AZURE_SPEECH_DEFAULT_MODEL,
   FOUNDRY_DEFAULT_CLEANUP_DEPLOYMENT,
-  FOUNDRY_DEFAULT_TRANSCRIPTION_DEPLOYMENT,
+  buildAzureSpeechTranscribeUrl,
   buildFoundryAudioTranscriptionUrl,
   buildFoundryChatCompletionsUrl,
+  normalizeAzureSpeechModel,
+  resolveAzureSpeechConfig,
   resolveFoundryConfig,
   resolveTranscriptionProviderPreference,
 } from '@/lib/foundryConfig'
 
-test('resolveFoundryConfig returns null without endpoint or key', () => {
-  assert.equal(resolveFoundryConfig({}), null)
+test('normalizeAzureSpeechModel maps AgileBoard ids to API names', () => {
+  assert.equal(normalizeAzureSpeechModel('mai-transcribe-1.5'), 'MAI-Transcribe-1.5')
+  assert.equal(normalizeAzureSpeechModel(' MAI-Transcribe-1.5 '), 'MAI-Transcribe-1.5')
+  assert.equal(normalizeAzureSpeechModel('mai-transcribe-2'), 'MAI-Transcribe-2')
+})
+
+test('resolveAzureSpeechConfig returns null without endpoint or key', () => {
+  assert.equal(resolveAzureSpeechConfig({}), null)
   assert.equal(
-    resolveFoundryConfig({
-      AZURE_FOUNDRY_ENDPOINT: 'https://example.openai.azure.com/openai/v1',
+    resolveAzureSpeechConfig({
+      AZURE_SPEECH_ENDPOINT: 'https://eastus.api.cognitive.microsoft.com/',
     }),
     null
   )
 })
 
-test('resolveFoundryConfig accepts AZURE_FOUNDRY_* aliases and defaults deployment', () => {
+test('resolveAzureSpeechConfig accepts SPEECH_* aliases and defaults model', () => {
+  const config = resolveAzureSpeechConfig({
+    SPEECH_ENDPOINT: 'https://eastus.api.cognitive.microsoft.com/',
+    SPEECH_API_KEY: 'speech-key',
+    AZURE_SPEECH_TRANSCRIPTION_MODEL: 'mai-transcribe-1.5',
+  })
+
+  assert.ok(config)
+  assert.equal(config.endpoint, 'https://eastus.api.cognitive.microsoft.com')
+  assert.equal(config.apiKey, 'speech-key')
+  assert.equal(config.model, AZURE_SPEECH_DEFAULT_MODEL)
+  assert.equal(config.apiVersion, AZURE_SPEECH_DEFAULT_API_VERSION)
+  assert.equal(
+    buildAzureSpeechTranscribeUrl(config),
+    'https://eastus.api.cognitive.microsoft.com/speechtotext/transcriptions:transcribe?api-version=2025-10-15'
+  )
+})
+
+test('resolveFoundryConfig defaults cleanup to DeepSeek-V4-Pro', () => {
   const config = resolveFoundryConfig({
-    AZURE_FOUNDRY_ENDPOINT: 'https://example.openai.azure.com/openai/v1/',
+    AZURE_FOUNDRY_ENDPOINT: 'https://example.openai.azure.com',
     AZURE_FOUNDRY_API_KEY: 'test-key',
   })
 
   assert.ok(config)
-  assert.equal(config.endpoint, 'https://example.openai.azure.com/openai/v1')
-  assert.equal(config.apiKey, 'test-key')
-  assert.equal(config.transcriptionDeployment, FOUNDRY_DEFAULT_TRANSCRIPTION_DEPLOYMENT)
   assert.equal(config.cleanupDeployment, FOUNDRY_DEFAULT_CLEANUP_DEPLOYMENT)
   assert.equal(config.cleanupEnabled, false)
-})
-
-test('resolveFoundryConfig accepts AZURE_OPENAI_* aliases and custom deployments', () => {
-  const config = resolveFoundryConfig({
-    AZURE_OPENAI_ENDPOINT: 'https://example.openai.azure.com',
-    AZURE_OPENAI_API_KEY: 'openai-key',
-    AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT: 'whisper',
-    AZURE_FOUNDRY_CLEANUP_DEPLOYMENT: 'DeepSeek-V4-Pro',
-    AZURE_FOUNDRY_TRANSCRIPT_CLEANUP: 'true',
-  })
-
-  assert.ok(config)
-  assert.equal(config.transcriptionDeployment, 'whisper')
-  assert.equal(config.cleanupDeployment, 'DeepSeek-V4-Pro')
-  assert.equal(config.cleanupEnabled, true)
+  assert.equal(config.apiVersion, '2024-06-01')
+  assert.equal(
+    buildFoundryChatCompletionsUrl(config.endpoint, config.apiVersion),
+    'https://example.openai.azure.com/openai/v1/chat/completions?api-version=2024-06-01'
+  )
   assert.equal(
     buildFoundryAudioTranscriptionUrl(config.endpoint),
     'https://example.openai.azure.com/openai/v1/audio/transcriptions'
   )
-  assert.equal(
-    buildFoundryChatCompletionsUrl(config.endpoint),
-    'https://example.openai.azure.com/openai/v1/chat/completions'
-  )
 })
 
-test('buildFoundryAudioTranscriptionUrl handles /openai/v1 endpoints', () => {
-  assert.equal(
-    buildFoundryAudioTranscriptionUrl('https://example.openai.azure.com/openai/v1'),
-    'https://example.openai.azure.com/openai/v1/audio/transcriptions'
-  )
-})
-
-test('resolveTranscriptionProviderPreference defaults to auto', () => {
+test('resolveTranscriptionProviderPreference maps speech aliases', () => {
   assert.equal(resolveTranscriptionProviderPreference({}), 'auto')
-  assert.equal(resolveTranscriptionProviderPreference({ TRANSCRIPTION_PROVIDER: 'foundry' }), 'foundry')
-  assert.equal(resolveTranscriptionProviderPreference({ TRANSCRIPTION_PROVIDER: 'OPENAI' }), 'openai')
+  assert.equal(resolveTranscriptionProviderPreference({ TRANSCRIPTION_PROVIDER: 'speech' }), 'speech')
+  assert.equal(
+    resolveTranscriptionProviderPreference({ TRANSCRIPTION_PROVIDER: 'azure-speech' }),
+    'speech'
+  )
+  assert.equal(resolveTranscriptionProviderPreference({ TRANSCRIPTION_PROVIDER: 'openai' }), 'openai')
 })

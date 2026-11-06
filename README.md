@@ -38,30 +38,34 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Microsoft Foundry transcription (preferred)
-AZURE_FOUNDRY_ENDPOINT=https://your-resource.openai.azure.com/openai/v1
-AZURE_FOUNDRY_API_KEY=
-AZURE_FOUNDRY_TRANSCRIPTION_DEPLOYMENT=gpt-4o-mini-transcribe
+# Azure Speech MAI-Transcribe (primary — AgileBoard-compatible)
+AZURE_SPEECH_ENDPOINT=https://eastus.api.cognitive.microsoft.com/
+AZURE_SPEECH_API_KEY=
+AZURE_SPEECH_TRANSCRIPTION_MODEL=mai-transcribe-1.5
 TRANSCRIPTION_PROVIDER=auto
+
+# Optional Foundry chat cleanup / demoted STT fallback
+# AZURE_FOUNDRY_ENDPOINT=https://your-resource.openai.azure.com
+# AZURE_FOUNDRY_API_KEY=
+# AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=DeepSeek-V4-Pro
 ```
 
-#### Transcription (Microsoft Foundry)
+#### Transcription (Azure Speech MAI-Transcribe)
 
 Live and upload transcription call `/api/transcription` and `/api/transcription/live`. With `TRANSCRIPTION_PROVIDER=auto` (default):
 
-1. **Foundry / Azure OpenAI** when `AZURE_FOUNDRY_ENDPOINT` + `AZURE_FOUNDRY_API_KEY` (or `AZURE_OPENAI_*` aliases) are set
-2. **Public OpenAI Whisper** (`OPENAI_API_KEY`, model `whisper-1`) as fallback
-3. **Demo scripts** when neither provider is configured
+1. **Azure Speech** Fast Transcription + **MAI-Transcribe-1.5** when `AZURE_SPEECH_ENDPOINT` + `AZURE_SPEECH_API_KEY` (or `SPEECH_*` aliases) are set
+2. **Public OpenAI Whisper** (`OPENAI_API_KEY`, model `whisper-1`) as optional fallback
+3. **Foundry** `/audio/transcriptions` only if explicitly configured / last resort
+4. **Demo scripts** when no provider is configured
 
-**Deploy a speech model** on the Foundry resource — chat LLMs (Llama, Grok, DeepSeek) are not used for STT. Recommended deployments:
+API shape (sync, good for 8s chunks + uploads):
 
-| Deployment | Why |
-|---|---|
-| `gpt-4o-mini-transcribe` (default) | Best latency/cost for live 8s MediaRecorder chunks |
-| `gpt-4o-transcribe` | Higher accuracy for noisy announcement audio |
-| `whisper` | Classic Azure Whisper; solid batch STT |
+`POST {AZURE_SPEECH_ENDPOINT}/speechtotext/transcriptions:transcribe?api-version=2025-10-15`  
+multipart `audio` + `definition.enhancedMode = { enabled: true, model: "MAI-Transcribe-1.5" }`  
+auth: `Ocp-Apim-Subscription-Key`
 
-Optional cleanup: set `AZURE_FOUNDRY_TRANSCRIPT_CLEANUP=true` and optionally `AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=Llama-3.3-70B-Instruct` (or `DeepSeek-V4-Pro`) to lightly normalize ASR text after STT. Do not use embedding or document-AI deployments for cleanup.
+Optional cleanup: set `AZURE_FOUNDRY_TRANSCRIPT_CLEANUP=true` with `AZURE_FOUNDRY_CLEANUP_DEPLOYMENT=DeepSeek-V4-Pro` on the Foundry/OpenAI endpoint.
 
 ### 3. Start Development Server
 
